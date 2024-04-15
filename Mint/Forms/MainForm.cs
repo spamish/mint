@@ -46,7 +46,7 @@ namespace Mint
             LoadAppsList();
             BuildExitItem();
             BuildLauncherMenu();
-
+            
             LoadOptions();
             lblversion.Text += Application.ProductVersion;
         }
@@ -232,7 +232,7 @@ namespace Mint
             {
                 if (System.IO.File.Exists(txtAppLink.Text))
                 {
-                    if (_AppsStructure.Apps.Find(x => x.AppLink == txtAppLink.Text) != null)
+                    if (_AppsStructure.Apps.Find(x => x.AppLink == txtAppLink.Text && x.AppParams == txtParams.Text) != null)
                     {
                         MessageBox.Show("This app already exists!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
@@ -240,7 +240,7 @@ namespace Mint
 
                     if (_AppsStructure.Apps.Find(x => x.AppTitle == txtAppTitle.Text) != null)
                     {
-                        MessageBox.Show("This app already exists!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("This title already exists!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
 
@@ -409,8 +409,20 @@ namespace Mint
 
                 Process p = new Process();
                 p.StartInfo.WorkingDirectory = Path.GetDirectoryName(appX.AppLink);
-                p.StartInfo.Arguments = appX.AppParams;
-                p.StartInfo.FileName = appX.AppLink;
+
+                switch (Path.GetExtension(appX.AppLink))
+                {
+                    case ".ps1":
+                        p.StartInfo.FileName = "powershell.exe";
+                        p.StartInfo.Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{appX.AppLink}\" {appX.AppParams}";
+                        p.StartInfo.UseShellExecute = false;
+                        break;
+                    default:
+                        p.StartInfo.FileName = appX.AppLink;
+                        p.StartInfo.Arguments = appX.AppParams;
+                        break;
+                }
+
                 p.Start();
             }
             catch (Exception ex)
@@ -509,19 +521,26 @@ namespace Mint
 
         private void LoadFile(string file)
         {
-            if (file.EndsWith(".lnk"))
+            switch (Path.GetExtension(file))
             {
-                WshShell shell = new WshShell();
-                IWshShortcut link = (IWshShortcut)shell.CreateShortcut(file);
+                case ".exe":
+                case ".bat":
+                case ".cmd":
+                case ".ps1":
+                    txtAppLink.Text = file;
+                    txtAppTitle.Text = Path.GetFileNameWithoutExtension(file);
+                    break;
+                case ".lnk":
+                    WshShell shell = new WshShell();
+                    IWshShortcut link = (IWshShortcut)shell.CreateShortcut(file);
 
-                txtAppLink.Text = link.TargetPath;
-                txtAppTitle.Text = Path.GetFileNameWithoutExtension(link.TargetPath);
-                txtParams.Text = link.Arguments;
-            }
-            else if (file.EndsWith(".exe"))
-            {
-                txtAppLink.Text = file;
-                txtAppTitle.Text = Path.GetFileNameWithoutExtension(file);
+                    txtAppLink.Text = link.TargetPath;
+                    txtParams.Text = link.Arguments;
+                    txtAppTitle.Text = Path.GetFileNameWithoutExtension(file);
+                    break;
+                default:
+                    MessageBox.Show("Extension '" + Path.GetExtension(file) + "' not supported.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    break;
             }
         }
 
@@ -530,7 +549,11 @@ namespace Mint
             OpenFileDialog dialog = new OpenFileDialog();
 
             dialog.Title = "Mint | Select an application...";
-            dialog.Filter = "Applications | *.exe; *.lnk";
+            dialog.Filter =
+                "Applications (*.exe; *.lnk)|*.exe; *.lnk|" +
+                "Batch Files (*.bat; *.cmd)|*.bat; *.cmd|" +
+                "PowerShell Scripts (*.ps1)|*.ps1|" +
+                "All files (*.*)|*.*";
 
             if (dialog.ShowDialog() == DialogResult.OK) LoadFile(dialog.FileName);
         }

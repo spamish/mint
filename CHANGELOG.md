@@ -1,3 +1,8 @@
+## [1.9.0] - 2024-04-15
+- Add support for duplicate programs (as long as parameters are different)
+- Distinct error messages for duplicate titles and applications
+- Implement running .bat, .cmd and .ps1 files
+
 ## [1.8.0] - 2024-04-15
 - Update version numbering to three digit format (#.#.#)
 - Use AppData for storing JSON settings
