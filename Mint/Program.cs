@@ -6,28 +6,8 @@ namespace Mint
 {
     static class Program
     {
-        /* VERSION PROPERTIES */
-        /* DO NOT LEAVE THEM EMPTY */
-
-        // Enter current version here
-        internal readonly static float Major = 1;
-        internal readonly static float Minor = 8;
-
-        /* END OF VERSION PROPERTIES */
-
-        internal static string GetCurrentVersionToString()
-        {
-            return Major.ToString() + "." + Minor.ToString();
-        }
-
-        internal static float GetCurrentVersion()
-        {
-            return float.Parse(GetCurrentVersionToString());
-        }
-
         const string _jsonAssembly = @"Mint.Newtonsoft.Json.dll";
-
-        const string _mutexGuid = "{DEADMOON-0EFC7B9A-D7FC-437F-B4B3-0118C643FE19-MINT}";
+        const string _mutexGuid = "{SPAMISH-1A670425-A3BD-4C25-9ED5-29CA1255599A-MINT}";
         internal static Mutex MUTEX;
         static bool _notRunning;
 

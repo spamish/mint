@@ -19,7 +19,7 @@ namespace Mint
     {
         internal AppsStructure _AppsStructure;
 
-        readonly string _latestVersionLink = "https://raw.githubusercontent.com/hellzerg/mint/master/version.txt";
+        readonly string _latestVersionLink = "https://raw.githubusercontent.com/spamish/mint/master/version.txt";
 
         readonly string _noNewVersionMessage = "You already have the latest version!";
         readonly string _betaVersionMessage = "You are using an experimental version!";
@@ -48,7 +48,7 @@ namespace Mint
             BuildLauncherMenu();
 
             LoadOptions();
-            lblversion.Text += Program.GetCurrentVersionToString();
+            lblversion.Text += Application.ProductVersion;
         }
 
         private void BuildExitItem()
@@ -178,7 +178,6 @@ namespace Mint
 
                 bool isDeadItem = false;
 
-                // .OrderBy(o => o.AppGroup)
                 foreach (App x in _AppsStructure.Apps)
                 {
                     isDeadItem = !File.Exists(x.AppLink);
@@ -275,12 +274,12 @@ namespace Mint
 
         private string NewVersionMessage(string latestVersion)
         {
-            return string.Format("There is a new version available!\n\nLatest version: {0}\nCurrent version: {1}\n\nDo you want to download it now?", latestVersion, Program.GetCurrentVersionToString());
+            return string.Format("There is a new version available!\n\nLatest version: {0}\nCurrent version: {1}\n\nDo you want to download it now?", latestVersion, Application.ProductVersion);
         }
 
         private string NewDownloadLink(string latestVersion)
         {
-            return string.Format("https://github.com/hellzerg/mint/releases/download/{0}/Mint-{0}.exe", latestVersion);
+            return string.Format("https://github.com/spamish/mint/releases/download/{0}/Mint.exe", latestVersion);
         }
 
         private void CheckForUpdate()
@@ -302,7 +301,9 @@ namespace Mint
 
             if (!string.IsNullOrEmpty(latestVersion))
             {
-                if (float.Parse(latestVersion) > Program.GetCurrentVersion())
+                int isLatest = string.CompareOrdinal(latestVersion, Application.ProductVersion);
+
+                if (isLatest > 0)
                 {
                     if (MessageBox.Show(NewVersionMessage(latestVersion), "Update available", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
@@ -356,13 +357,13 @@ namespace Mint
                         }
                     }
                 }
-                else if (float.Parse(latestVersion) == Program.GetCurrentVersion())
+                else if (isLatest < 0)
                 {
-                    MessageBox.Show(_noNewVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(_betaVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
-                    MessageBox.Show(_betaVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(_noNewVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }

@@ -1,3 +1,7 @@
+## [1.8.0] - 2024-04-15
+- Update version numbering to three digit format (#.#.#)
+- Use AppData for storing JSON settings
+
 ## [1.8] - 2023-01-08
 - New: Mint properly supports DPI scaling now
 - Security: Newtonsoft.JSON updated to latest version

@@ -2,15 +2,11 @@
    <img src="banner.png">
 </p> 
 
+The purpose of this fork of Mint ( https://github.com/hellzerg/mint ) is so I can expand on what can be run and play around with .NET versions/environments.
+
 ## Summary: ##
 
 A minimal app launcher residing in your taskbar
-
-<p align="center">
-	<a href="https://github.com/hellzerg/mint/releases/download/1.8/Mint-1.8.exe" target="_blank">
-		<img src="download-button.png">
-	</a>
-</p> 
 
 ## Features: ##
 
@@ -21,10 +17,12 @@ A minimal app launcher residing in your taskbar
 * Drap n' Drop support for quickly adding apps
 
 ## Downloads: ##
-https://github.com/hellzerg/mint/releases
+Original Repo: https://github.com/hellzerg/mint/releases
+
+My Releases: https://github.com/spamish/mint/releases
 
 ## Screenshots: ##
-https://github.com/hellzerg/mint/blob/master/IMAGES.md
+https://github.com/spamish/mint/blob/master/IMAGES.md
 
 ## Compatibility: ##
 
@@ -34,8 +32,8 @@ Compatible with Windows 7, 8.1, 10, 11
 
 ## Details: ##
 
-Latest version: 1.8
+Latest version: 1.8.0
 
-Released: January 8, 2023
+Released: 15 April 2024
 
-SHA256: 01A01B18C661955B235E65E56F39BC895721289573FF41431C06BA62E71F99A6
+SHA256: adf60ca40010ecbdd551c89ae3f803ca9bae0d57c1ac3e45a392833738390190
