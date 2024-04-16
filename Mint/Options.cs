@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -93,42 +94,56 @@ namespace Mint
 
         internal static void SaveSettings()
         {
-            if (File.Exists(_settingsFile))
+            try
             {
-                File.Delete(_settingsFile);
-
-                using (FileStream fs = File.Open(_settingsFile, FileMode.OpenOrCreate))
-                using (StreamWriter sw = new StreamWriter(fs))
-                using (JsonWriter jw = new JsonTextWriter(sw))
+                if (File.Exists(_settingsFile))
                 {
-                    jw.Formatting = Formatting.Indented;
+                    File.Delete(_settingsFile);
 
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(jw, CurrentOptions);
+                    using (FileStream fs = File.Open(_settingsFile, FileMode.OpenOrCreate))
+                    using (StreamWriter sw = new StreamWriter(fs))
+                    using (JsonWriter jw = new JsonTextWriter(sw))
+                    {
+                        jw.Formatting = Formatting.Indented;
+
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Serialize(jw, CurrentOptions);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "SaveSettings Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         internal static void LoadSettings()
         {
-            if (!File.Exists(_settingsFile))
+            try
             {
-                CurrentOptions.Theme = Theme.Amethyst;
-                CurrentOptions.AutoStart = false;
-
-                using (FileStream fs = File.Open(_settingsFile, FileMode.CreateNew))
-                using (StreamWriter sw = new StreamWriter(fs))
-                using (JsonWriter jw = new JsonTextWriter(sw))
+                if (!File.Exists(_settingsFile))
                 {
-                    jw.Formatting = Formatting.Indented;
+                    CurrentOptions.Theme = Theme.Amethyst;
+                    CurrentOptions.AutoStart = false;
 
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Serialize(jw, CurrentOptions);
+                    using (FileStream fs = File.Open(_settingsFile, FileMode.CreateNew))
+                    using (StreamWriter sw = new StreamWriter(fs))
+                    using (JsonWriter jw = new JsonTextWriter(sw))
+                    {
+                        jw.Formatting = Formatting.Indented;
+
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Serialize(jw, CurrentOptions);
+                    }
+                }
+                else
+                {
+                    CurrentOptions = JsonConvert.DeserializeObject<SettingsJson>(File.ReadAllText(_settingsFile));
                 }
             }
-            else
+            catch (Exception ex)
             {
-                CurrentOptions = JsonConvert.DeserializeObject<SettingsJson>(File.ReadAllText(_settingsFile));
+                MessageBox.Show(ex.Message, "LoadSettings Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

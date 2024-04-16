@@ -30,7 +30,18 @@ namespace Mint
                     AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
                     Options.LoadSettings();
-                    Application.Run(new MainForm());
+                    Form mintApp = new MainForm();
+
+                    // If AutoStart enabled then start in system tray
+                    if (Options.CurrentOptions.AutoStart)
+                    {
+                        Application.Run();
+                    }
+                    // Else open form
+                    else
+                    {
+                        Application.Run(mintApp);
+                    }
                 }
                 else
                 {

@@ -1,3 +1,7 @@
+## [1.9.1] - 2024-04-16
+- Add exception wrapping when saving and loading JSON settings or checking for updates
+- Start in background if 'Start with Windows' is enabled
+
 ## [1.9.0] - 2024-04-15
 - Add support for duplicate programs (as long as parameters are different)
 - Distinct error messages for duplicate titles and applications

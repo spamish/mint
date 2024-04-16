@@ -66,17 +66,42 @@ namespace Mint
 
         private void LoadAppsStructure()
         {
-            if (System.IO.File.Exists(Options.AppsStructureFile))
+            try
             {
-                _AppsStructure = JsonConvert.DeserializeObject<AppsStructure>(System.IO.File.ReadAllText(Options.AppsStructureFile));
-            }
-            else
-            {
-                _AppsStructure = new AppsStructure();
-                _AppsStructure.Apps = new List<App>();
-                _AppsStructure.Groups = new List<string>();
+                if (System.IO.File.Exists(Options.AppsStructureFile))
+                {
+                    _AppsStructure = JsonConvert.DeserializeObject<AppsStructure>(System.IO.File.ReadAllText(Options.AppsStructureFile));
+                }
+                else
+                {
+                    _AppsStructure = new AppsStructure();
+                    _AppsStructure.Apps = new List<App>();
+                    _AppsStructure.Groups = new List<string>();
 
-                using (FileStream fs = System.IO.File.Open(Options.AppsStructureFile, FileMode.CreateNew))
+                    using (FileStream fs = System.IO.File.Open(Options.AppsStructureFile, FileMode.CreateNew))
+                    using (StreamWriter sw = new StreamWriter(fs))
+                    using (JsonWriter jw = new JsonTextWriter(sw))
+                    {
+                        jw.Formatting = Formatting.Indented;
+
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.Serialize(jw, _AppsStructure);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "LoadApps Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void SaveAppsStructure()
+        {
+            try
+            {
+                File.WriteAllText(Options.AppsStructureFile, string.Empty);
+
+                using (FileStream fs = System.IO.File.Open(Options.AppsStructureFile, FileMode.OpenOrCreate))
                 using (StreamWriter sw = new StreamWriter(fs))
                 using (JsonWriter jw = new JsonTextWriter(sw))
                 {
@@ -86,20 +111,9 @@ namespace Mint
                     serializer.Serialize(jw, _AppsStructure);
                 }
             }
-        }
-
-        private void SaveAppsStructure()
-        {
-            File.WriteAllText(Options.AppsStructureFile, string.Empty);
-
-            using (FileStream fs = System.IO.File.Open(Options.AppsStructureFile, FileMode.OpenOrCreate))
-            using (StreamWriter sw = new StreamWriter(fs))
-            using (JsonWriter jw = new JsonTextWriter(sw))
+            catch (Exception ex)
             {
-                jw.Formatting = Formatting.Indented;
-
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(jw, _AppsStructure);
+                MessageBox.Show(ex.Message, "SaveApps Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -296,7 +310,7 @@ namespace Mint
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             if (!string.IsNullOrEmpty(latestVersion))

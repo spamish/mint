@@ -32,8 +32,8 @@ Compatible with Windows 7, 8.1, 10, 11
 
 ## Details: ##
 
-Latest version: 1.9.0
+Latest version: 1.9.1
 
-Released: 15 April 2024
+Released: 16 April 2024
 
-SHA256: 471c58c8fdaab4f8ed546f9533e5cf2e2f242ce2a022b86b40cd0f63e70f74f3
+SHA256: f74c313c3137ca2fbf790a5ea58792280ee860e974ab8ce59cacfa2bf2099969
