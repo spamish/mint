@@ -23,9 +23,9 @@ namespace Mint
 
         internal readonly static string ThemeFlag = "themeable";
 
-        internal static string AppsStructureFile = Application.UserAppDataPath + "\\Apps.json";
+        internal static string AppsStructureFile = Path.Combine(Application.UserAppDataPath, "Apps.json");
 
-        readonly static string _settingsFile = Application.UserAppDataPath + "\\Mint.json";
+        readonly static string _settingsFile = Path.Combine(Application.UserAppDataPath, "Mint.json");
 
         internal static SettingsJson CurrentOptions = new SettingsJson();
 

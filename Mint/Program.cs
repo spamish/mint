@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -19,6 +22,17 @@ namespace Mint
         {
             if (Environment.OSVersion.Version.Major >= 6) SetProcessDPIAware();
 
+            string AppDataExe = Path.Combine(Application.UserAppDataPath, "Mint.exe");
+
+            if (Assembly.GetExecutingAssembly().Location != AppDataExe)
+            {
+                File.Copy(Assembly.GetExecutingAssembly().Location, AppDataExe, true);
+                Process p = new Process();
+                p.StartInfo.FileName = AppDataExe;
+                p.Start();
+                Environment.Exit(0);
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -28,7 +42,7 @@ namespace Mint
                 {
                     EmbeddedAssembly.Load(_jsonAssembly, _jsonAssembly.Replace("Mint.", string.Empty));
                     AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
+                    
                     Options.LoadSettings();
                     Form mintApp = new MainForm();
 

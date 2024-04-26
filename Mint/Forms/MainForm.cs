@@ -8,7 +8,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 using File = System.IO.File;
@@ -19,7 +21,7 @@ namespace Mint
     {
         internal AppsStructure _AppsStructure;
 
-        readonly string _latestVersionLink = "https://raw.githubusercontent.com/spamish/mint/master/version.txt";
+        readonly string _latestVersionLink = "https://github.com/spamish/mint/releases/latest";
 
         readonly string _noNewVersionMessage = "You already have the latest version!";
         readonly string _betaVersionMessage = "You are using an experimental version!";
@@ -298,87 +300,64 @@ namespace Mint
 
         private void CheckForUpdate()
         {
-            WebClient client = new WebClient
-            {
-                Encoding = Encoding.UTF8
-            };
+            Version currentVersion = new Version(Application.ProductVersion);
+            Version latestVersion;
 
-            string latestVersion = string.Empty;
             try
             {
-                latestVersion = client.DownloadString(_latestVersionLink);
+                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(_latestVersionLink);
+
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    latestVersion = new Version(response.ResponseUri.ToString().Split('/').Last());
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            if (!string.IsNullOrEmpty(latestVersion))
+            if (latestVersion.CompareTo(currentVersion) > 0)
             {
-                int isLatest = string.CompareOrdinal(latestVersion, Application.ProductVersion);
-
-                if (isLatest > 0)
+                if (MessageBox.Show(NewVersionMessage(latestVersion.ToString()), "Update available", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    if (MessageBox.Show(NewVersionMessage(latestVersion), "Update available", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    // PATCHING PROCESS
+                    try
                     {
-                        // PATCHING PROCESS
-                        try
-                        {
-                            Assembly currentAssembly = Assembly.GetEntryAssembly();
+                        // CREATE NEW VERSION FOLDER
+                        string newAppDataPath = Application.UserAppDataPath.Replace(currentVersion.ToString(), latestVersion.ToString());
+                        Directory.CreateDirectory(newAppDataPath);
 
-                            if (currentAssembly == null)
-                            {
-                                currentAssembly = Assembly.GetCallingAssembly();
-                            }
+                        // DOWNLOAD NEW VERSION
+                        WebClient client = new WebClient();
+                        client.DownloadFile(NewDownloadLink(latestVersion.ToString()), Path.Combine(newAppDataPath, "Mint.exe"));
 
-                            string appFolder = Path.GetDirectoryName(currentAssembly.Location);
-                            string appName = Path.GetFileNameWithoutExtension(currentAssembly.Location);
-                            string appExtension = Path.GetExtension(currentAssembly.Location);
+                        // COPY SETTINGS TO NEW FOLDER
+                        SaveAppsStructure();
+                        Options.SaveSettings();
+                        File.Copy(Path.Combine(Application.UserAppDataPath, "Apps.json"), Path.Combine(newAppDataPath, "Apps.json"));
+                        File.Copy(Path.Combine(Application.UserAppDataPath, "Mint.json"), Path.Combine(newAppDataPath, "Mint.json"));
 
-                            string archiveFile = Path.Combine(appFolder, appName + "_old" + appExtension);
-                            string appFile = Path.Combine(appFolder, appName + appExtension);
-                            string tempFile = Path.Combine(appFolder, appName + "_tmp" + appExtension);
-
-                            // DOWNLOAD NEW VERSION
-                            client.DownloadFile(NewDownloadLink(latestVersion), tempFile);
-
-                            // DELETE PREVIOUS BACK-UP
-                            if (System.IO.File.Exists(archiveFile))
-                            {
-                                System.IO.File.Delete(archiveFile);
-                            }
-
-                            // MAKE BACK-UP
-                            System.IO.File.Move(appFile, archiveFile);
-
-                            // PATCH
-                            System.IO.File.Move(tempFile, appFile);
-
-                            // BYPASS SINGLE-INSTANCE MECHANISM
-                            _allowExit = true;
-                            if (Program.MUTEX != null)
-                            {
-                                Program.MUTEX.ReleaseMutex();
-                                Program.MUTEX.Dispose();
-                                Program.MUTEX = null;
-                            }
-
-                            Application.Restart();
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message);
-                        }
+                        // LAUNCH NEW APPLICATION
+                        Process p = new Process();
+                        p.StartInfo.FileName = Path.Combine(newAppDataPath, "Mint.exe");
+                        p.Start();
+                        Environment.Exit(0);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
                     }
                 }
-                else if (isLatest < 0)
-                {
-                    MessageBox.Show(_betaVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show(_noNewVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+            }
+            else if (latestVersion.CompareTo(currentVersion) < 0)
+            {
+                MessageBox.Show(_betaVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(_noNewVersionMessage, "No update available", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
